@@ -11,7 +11,7 @@ import {
 } from 'recharts';
 import { useFinanceStore } from '@/store/financeStore';
 import {
-  formatCurrency, formatDate, getTodayString, exportToCSV
+  formatCurrency, formatDate, getTodayString, exportToCSV, confirmAction
 } from '@/utils';
 import type { TransactionType, PaymentMethod, DebtType, AccountType } from '@/types';
 
@@ -557,7 +557,7 @@ export default function FinancePage() {
                           <button
                             className="btn btn-ghost btn-sm"
                             style={{ color: 'var(--color-danger)' }}
-                            onClick={() => deleteTransaction(t.id)}
+                            onClick={() => confirmAction('Bạn có chắc muốn xóa giao dịch này?', () => deleteTransaction(t.id))}
                             title="Xóa giao dịch"
                           >
                             <Trash2 size={14} />
@@ -609,7 +609,7 @@ export default function FinancePage() {
                     <button
                       className="btn btn-ghost btn-sm"
                       style={{ color: 'var(--color-danger)' }}
-                      onClick={() => deleteBudget(b.id)}
+                      onClick={() => confirmAction('Bạn có chắc muốn xóa ngân sách này?', () => deleteBudget(b.id))}
                       title="Xóa ngân sách"
                     >
                       <Trash2 size={14} />

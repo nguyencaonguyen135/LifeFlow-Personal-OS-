@@ -15,6 +15,7 @@ import HabitsPage from './pages/habits/HabitsPage';
 import GoalsPage from './pages/goals/GoalsPage';
 import ReportsPage from './pages/reports/ReportsPage';
 import SettingsPage from './pages/settings/SettingsPage';
+import HealthPage from './pages/health/HealthPage';
 
 // Stores & Data
 import { loadDemoData } from './data/demoData';
@@ -25,9 +26,11 @@ import { useHabitStore } from './store/habitStore';
 import { useGoalStore } from './store/goalStore';
 import { useCalendarStore } from './store/calendarStore';
 import { useStudyStore } from './store/studyStore';
+import { useHealthStore } from './store/healthStore';
 import { getTodayString } from './utils';
 
 import './App.css';
+import ConfirmDialog from './components/common/ConfirmDialog';
 
 type QuickAction = 'income' | 'expense' | 'task' | 'event' | 'habit' | 'goal' | null;
 
@@ -51,6 +54,7 @@ function AppShell() {
     useGoalStore.getState().load();
     useCalendarStore.getState().load();
     useStudyStore.getState().load();
+    useHealthStore.getState().load();
   }, []);
 
   const openQuickAdd = (type: string) => {
@@ -89,6 +93,7 @@ function AppShell() {
           <Route path="/calendar/*" element={<CalendarPage />} />
           <Route path="/study/*" element={<StudyPage />} />
           <Route path="/habits" element={<HabitsPage />} />
+          <Route path="/health" element={<HealthPage />} />
           <Route path="/goals" element={<GoalsPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
@@ -105,6 +110,7 @@ function AppShell() {
           onSaved={() => setQuickAction(null)}
         />
       )}
+      <ConfirmDialog />
     </div>
   );
 }

@@ -6,7 +6,7 @@ import {
   ArrowRight, ArrowLeft, Calendar
 } from 'lucide-react';
 import { useTaskStore } from '@/store/taskStore';
-import { formatDate, getTodayString } from '@/utils';
+import { formatDate, getTodayString, confirmAction } from '@/utils';
 import type { TaskPriority, TaskStatus, Task } from '@/types';
 
 const STATUS_COLUMNS: { key: TaskStatus; label: string; color: string }[] = [
@@ -278,7 +278,7 @@ export default function TasksPage() {
                     >
                       <button
                         className="task-check"
-                        onClick={() => toggleTaskStatus(task.id)}
+                        onClick={() => confirmAction('Bạn có muốn cập nhật trạng thái công việc này?', () => toggleTaskStatus(task.id))}
                         style={{ background: 'none', border: 'none', cursor: 'pointer' }}
                       >
                         {isDone ? (
@@ -334,7 +334,7 @@ export default function TasksPage() {
                         <button
                           className="btn btn-ghost btn-sm"
                           style={{ color: 'var(--color-danger)' }}
-                          onClick={() => deleteTask(task.id)}
+                          onClick={() => confirmAction('Bạn có chắc muốn xóa công việc này?', () => deleteTask(task.id))}
                           title="Xóa công việc"
                         >
                           <Trash2 size={15} />
@@ -378,7 +378,7 @@ export default function TasksPage() {
                           <button
                             className="btn btn-ghost btn-sm"
                             style={{ padding: 2, color: 'var(--text-muted)' }}
-                            onClick={() => deleteTask(t.id)}
+                            onClick={() => confirmAction('Bạn có chắc muốn xóa công việc này?', () => deleteTask(t.id))}
                           >
                             <Trash2 size={13} />
                           </button>
@@ -463,7 +463,7 @@ export default function TasksPage() {
                     <button
                       className="btn btn-ghost btn-sm"
                       style={{ color: 'var(--color-danger)' }}
-                      onClick={() => deleteProject(p.id)}
+                      onClick={() => confirmAction('Bạn có chắc muốn xóa dự án này?', () => deleteProject(p.id))}
                     >
                       <Trash2 size={14} />
                     </button>

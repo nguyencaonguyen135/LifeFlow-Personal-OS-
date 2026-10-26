@@ -12,6 +12,7 @@ import { useCalendarStore } from '@/store/calendarStore';
 import { useStudyStore } from '@/store/studyStore';
 import { storageExport, storageImport, storageClear } from '@/services/storage';
 import { loadDemoData } from '@/data/demoData';
+import { confirmAction } from '@/utils';
 
 export default function SettingsPage() {
   const {
@@ -37,9 +38,19 @@ export default function SettingsPage() {
   };
 
   const handleSaveProfile = () => {
-    updateUser({ name, email, avatar });
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2500);
+    if (!name.trim()) {
+      setStatusMessage('Tên hiển thị không được để trống.');
+      return;
+    }
+    confirmAction('Bạn có muốn cập nhật hồ sơ này?', () => {
+      updateUser({ name, email, avatar });
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2500);
+    });
+  };
+
+  const confirmSettingsUpdate = (message: string, change: Parameters<typeof updateSettings>[0]) => {
+    confirmAction(message, () => updateSettings(change));
   };
 
   const handleExportJSON = () => {
@@ -79,21 +90,21 @@ export default function SettingsPage() {
   };
 
   const handleResetDemoData = () => {
-    if (confirm('Bạn có chắc chắn muốn tải lại dữ liệu mẫu Demo không?')) {
+    confirmAction('Bạn có chắc chắn muốn tải lại dữ liệu mẫu Demo không?', () => {
       loadDemoData();
       reloadAllStores();
       setStatusMessage('Đã khôi phục dữ liệu mẫu Demo thành công!');
       setTimeout(() => setStatusMessage(null), 3000);
-    }
+    });
   };
 
   const handleClearAllData = () => {
-    if (confirm('CẢNH BÁO: Thao tác này sẽ xóa toàn bộ dữ liệu trong trình duyệt của bạn và không thể hoàn tác! Bạn có chắc chắn không?')) {
+    confirmAction('CẢNH BÁO: Thao tác này sẽ xóa toàn bộ dữ liệu trong trình duyệt của bạn và không thể hoàn tác! Bạn có chắc chắn không?', () => {
       storageClear();
       reloadAllStores();
       setStatusMessage('Đã xóa sạch dữ liệu.');
       setTimeout(() => setStatusMessage(null), 3000);
-    }
+    });
   };
 
   return (
@@ -168,13 +179,13 @@ export default function SettingsPage() {
           <div style={{ display: 'flex', gap: 6 }}>
             <button
               className={`btn btn-sm ${settings.theme === 'light' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => updateSettings({ theme: 'light' })}
+              onClick={() => confirmAction('Bạn có muốn cập nhật giao diện sáng?', () => updateSettings({ theme: 'light' }))}
             >
               <Sun size={14} /> Sáng
             </button>
             <button
               className={`btn btn-sm ${settings.theme === 'dark' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => updateSettings({ theme: 'dark' })}
+              onClick={() => confirmAction('Bạn có muốn cập nhật giao diện tối?', () => updateSettings({ theme: 'dark' }))}
             >
               <Moon size={14} /> Tối
             </button>
@@ -188,7 +199,7 @@ export default function SettingsPage() {
             <select
               className="input select"
               value={settings.currency}
-              onChange={e => updateSettings({ currency: e.target.value as any })}
+              onChange={e => confirmSettingsUpdate('Bạn có muốn cập nhật đơn vị tiền tệ?', { currency: e.target.value as any })}
             >
               <option value="VND">VND (₫ - Đồng Việt Nam)</option>
               <option value="USD">USD ($ - Dollar Mỹ)</option>
@@ -200,7 +211,7 @@ export default function SettingsPage() {
             <select
               className="input select"
               value={settings.dateFormat}
-              onChange={e => updateSettings({ dateFormat: e.target.value as any })}
+              onChange={e => confirmSettingsUpdate('Bạn có muốn cập nhật định dạng ngày?', { dateFormat: e.target.value as any })}
             >
               <option value="DD/MM/YYYY">DD/MM/YYYY (Việt Nam)</option>
               <option value="YYYY-MM-DD">YYYY-MM-DD (Quốc tế)</option>
@@ -217,7 +228,7 @@ export default function SettingsPage() {
               type="number"
               min="1"
               value={settings.dailyGoals.studyHours}
-              onChange={e => updateSettings({
+              onChange={e => confirmSettingsUpdate('Bạn có muốn cập nhật mục tiêu học tập?', {
                 dailyGoals: { ...settings.dailyGoals, studyHours: Number(e.target.value) || 2 }
               })}
             />
@@ -230,7 +241,7 @@ export default function SettingsPage() {
               type="number"
               min="1"
               value={settings.dailyGoals.taskCount}
-              onChange={e => updateSettings({
+              onChange={e => confirmSettingsUpdate('Bạn có muốn cập nhật mục tiêu công việc?', {
                 dailyGoals: { ...settings.dailyGoals, taskCount: Number(e.target.value) || 3 }
               })}
             />

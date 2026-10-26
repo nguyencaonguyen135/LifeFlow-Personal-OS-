@@ -6,7 +6,7 @@ import {
   Target, BarChart3, Settings, TrendingUp, ClipboardList,
   Kanban, FolderOpen, Clock, GraduationCap, CalendarDays,
   FileText, Trophy, ChevronLeft, ChevronRight, Repeat,
-  PiggyBank, CreditCard, FileBarChart, Flame, ChevronDown
+  PiggyBank, CreditCard, FileBarChart, Flame, ChevronDown, HeartPulse
 } from 'lucide-react';
 
 interface NavItem {
@@ -50,6 +50,7 @@ const NAV_ITEMS: NavItem[] = [
     ]
   },
   { label: 'Thói quen', icon: Flame, path: '/habits' },
+  { label: 'Sức khỏe', icon: HeartPulse, path: '/health' },
   { label: 'Mục tiêu', icon: Trophy, path: '/goals' },
   { label: 'Báo cáo', icon: BarChart3, path: '/reports' },
   { label: 'Cài đặt', icon: Settings, path: '/settings' },

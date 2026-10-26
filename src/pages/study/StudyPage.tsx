@@ -5,7 +5,7 @@ import {
   Plus, Play, Pause, RotateCcw, CheckCircle2, Trash2, MapPin, Video
 } from 'lucide-react';
 import { useStudyStore } from '@/store/studyStore';
-import { formatDate, getTodayString } from '@/utils';
+import { formatDate, getTodayString, confirmAction } from '@/utils';
 import type { ImportanceLevel, AssignmentStatus } from '@/types';
 
 const DAYS_OF_WEEK = [
@@ -259,7 +259,7 @@ export default function StudyPage() {
                       {s.code && <small className="muted">Mã: {s.code}</small>}
                     </div>
                   </div>
-                  <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => deleteSubject(s.id)}>
+                  <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => confirmAction('Bạn có chắc muốn xóa môn học này?', () => deleteSubject(s.id))}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -316,7 +316,7 @@ export default function StudyPage() {
                               <button
                                 className="btn btn-ghost btn-sm"
                                 style={{ padding: 2, color: 'var(--color-danger)' }}
-                                onClick={() => deleteScheduleEntry(entry.id)}
+                                onClick={() => confirmAction('Bạn có chắc muốn xóa lịch học này?', () => deleteScheduleEntry(entry.id))}
                               >
                                 <Trash2 size={12} />
                               </button>
@@ -380,11 +380,11 @@ export default function StudyPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <button
                         className={`btn btn-sm ${isSubmitted ? 'btn-secondary' : 'btn-primary'}`}
-                        onClick={() => updateAssignment(a.id, { status: isSubmitted ? 'pending' : 'submitted' })}
+                        onClick={() => confirmAction('Bạn có muốn cập nhật trạng thái bài tập này?', () => updateAssignment(a.id, { status: isSubmitted ? 'pending' : 'submitted' }))}
                       >
                         {isSubmitted ? 'Đã nộp ✓' : 'Nộp bài'}
                       </button>
-                      <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => deleteAssignment(a.id)}>
+                      <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)' }} onClick={() => confirmAction('Bạn có chắc muốn xóa bài tập này?', () => deleteAssignment(a.id))}>
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -421,7 +421,7 @@ export default function StudyPage() {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <strong style={{ fontSize: 14, color: 'var(--color-danger)' }}>{e.title}</strong>
-                      <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)', padding: 2 }} onClick={() => deleteExam(e.id)}>
+                      <button className="btn btn-ghost btn-sm" style={{ color: 'var(--color-danger)', padding: 2 }} onClick={() => confirmAction('Bạn có chắc muốn xóa kỳ thi này?', () => deleteExam(e.id))}>
                         <Trash2 size={13} />
                       </button>
                     </div>

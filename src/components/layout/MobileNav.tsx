@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Wallet, ListChecks, Calendar, BookOpen, Flame, Trophy } from 'lucide-react';
+import { LayoutDashboard, Wallet, ListChecks, Calendar, Flame, HeartPulse } from 'lucide-react';
 
 export default function MobileNav() {
   const items = [
@@ -7,7 +7,7 @@ export default function MobileNav() {
     { label: 'Tài chính', icon: Wallet, path: '/finance/overview' },
     { label: 'Công việc', icon: ListChecks, path: '/tasks/list' },
     { label: 'Lịch', icon: Calendar, path: '/calendar' },
-    { label: 'Thói quen', icon: Flame, path: '/habits' },
+    { label: 'Sức khỏe', icon: HeartPulse, path: '/health' },
   ];
 
   return (

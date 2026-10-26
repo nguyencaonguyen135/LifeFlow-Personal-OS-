@@ -18,7 +18,7 @@ import { useStudyStore } from '@/store/studyStore';
 import { useSettingStore } from '@/store/settingStore';
 import {
   formatCurrency, formatDate, getTodayString, getMotivationalQuote,
-  getGreeting
+  getGreeting, confirmAction
 } from '@/utils';
 
 const PIE_COLORS = ['#6366f1', '#f97316', '#22c55e', '#ec4899', '#3b82f6', '#eab308', '#a855f7'];
@@ -366,7 +366,7 @@ export default function Dashboard({ onQuickAdd }: { onQuickAdd: (type: string) =
                   <button
                     key={task.id}
                     className={`task-row ${task.status === 'done' ? 'completed' : ''}`}
-                    onClick={() => toggleTaskStatus(task.id)}
+                    onClick={() => confirmAction('Bạn có muốn cập nhật trạng thái công việc này?', () => toggleTaskStatus(task.id))}
                   >
                     <span className="task-check">
                       {task.status === 'done' ? (

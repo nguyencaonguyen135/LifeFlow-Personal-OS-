@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Flame, Plus, Trash2, CheckCircle2, TrendingUp, Calendar } from 'lucide-react';
 import { useHabitStore } from '@/store/habitStore';
-import { getTodayString, toISODateString } from '@/utils';
+import { getTodayString, toISODateString, confirmAction } from '@/utils';
 
 export default function HabitsPage() {
   const {
@@ -127,7 +127,7 @@ export default function HabitsPage() {
                   <button
                     className="btn btn-ghost btn-sm"
                     style={{ color: 'var(--color-danger)' }}
-                    onClick={() => deleteHabit(habit.id)}
+                    onClick={() => confirmAction('Bạn có chắc muốn xóa thói quen này?', () => deleteHabit(habit.id))}
                   >
                     <Trash2 size={15} />
                   </button>

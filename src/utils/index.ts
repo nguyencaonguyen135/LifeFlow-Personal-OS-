@@ -217,6 +217,8 @@ export function matchesSearch(text: string, query: string): boolean {
   return searchNormalize(text).includes(searchNormalize(query));
 }
 
+export { confirmAction } from '@/components/common/ConfirmDialog';
+
 // ─── Array Utilities ─────────────────────────────────────
 
 export function sortBy<T>(arr: T[], key: keyof T, dir: 'asc' | 'desc' = 'asc'): T[] {

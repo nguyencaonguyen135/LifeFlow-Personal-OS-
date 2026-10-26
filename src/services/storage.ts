@@ -25,6 +25,7 @@ export const StorageKeys = {
   STUDY_SESSIONS: `${PREFIX}study_sessions`,
   HABITS: `${PREFIX}habits`,
   HABIT_LOGS: `${PREFIX}habit_logs`,
+  HEALTH_RECORDS: `${PREFIX}health_records`,
   PERSONAL_GOALS: `${PREFIX}personal_goals`,
   NOTIFICATIONS: `${PREFIX}notifications`,
   VERSION: `${PREFIX}version`,

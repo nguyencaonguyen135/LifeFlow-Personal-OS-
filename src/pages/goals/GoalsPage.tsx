@@ -4,7 +4,7 @@ import {
   TrendingUp, Award, CheckSquare
 } from 'lucide-react';
 import { useGoalStore } from '@/store/goalStore';
-import { formatDate, getTodayString } from '@/utils';
+import { formatDate, getTodayString, confirmAction } from '@/utils';
 import type { GoalCategory, PersonalGoal } from '@/types';
 
 const CATEGORIES: { key: 'all' | GoalCategory; label: string }[] = [
@@ -73,7 +73,7 @@ export default function GoalsPage() {
     const val = Number(newProgressValue);
     if (isNaN(val)) return;
 
-    updateProgress(selectedGoalId, val);
+    confirmAction('Bạn có muốn cập nhật tiến độ mục tiêu này?', () => updateProgress(selectedGoalId, val));
     setModalType(null);
     setNewProgressValue('');
   };
@@ -134,7 +134,7 @@ export default function GoalsPage() {
                 <button
                   className="btn btn-ghost btn-sm"
                   style={{ color: 'var(--color-danger)' }}
-                  onClick={() => deleteGoal(goal.id)}
+                  onClick={() => confirmAction('Bạn có chắc muốn xóa mục tiêu này?', () => deleteGoal(goal.id))}
                 >
                   <Trash2 size={15} />
                 </button>

@@ -393,6 +393,28 @@ export interface HabitLog {
   createdAt: string;
 }
 
+// ─── Health & Wellness ────────────────────────────────────
+
+export type HealthMood = 'great' | 'good' | 'okay' | 'low' | 'bad';
+
+export interface HealthRecord {
+  id: string;
+  userId: string;
+  date: string;
+  sleepDuration: number;
+  sleepQuality: number;
+  sleepStart?: string;
+  sleepEnd?: string;
+  waterMl: number;
+  exerciseMinutes: number;
+  exerciseType?: string;
+  mood?: HealthMood;
+  energyLevel?: number;
+  note?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Personal Goals ───────────────────────────────────────
 
 export type GoalCategory = 'financial' | 'study' | 'career' | 'health' | 'personal';

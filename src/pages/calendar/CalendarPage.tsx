@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { useCalendarStore } from '@/store/calendarStore';
 import { useStudyStore } from '@/store/studyStore';
-import { formatDate, getTodayString } from '@/utils';
+import { formatDate, getTodayString, confirmAction } from '@/utils';
 import type { EventType, CalendarEvent } from '@/types';
 
 export default function CalendarPage() {
@@ -342,7 +342,7 @@ export default function CalendarPage() {
                     <button
                       className="btn btn-ghost btn-sm"
                       style={{ padding: 2, color: 'var(--color-danger)' }}
-                      onClick={() => deleteEvent(ev.id)}
+                      onClick={() => confirmAction('Bạn có chắc muốn xóa sự kiện này?', () => deleteEvent(ev.id))}
                     >
                       <Trash2 size={13} />
                     </button>
