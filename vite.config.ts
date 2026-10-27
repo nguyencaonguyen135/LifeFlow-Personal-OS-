@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/LifeFlow-Personal-OS/', // <--- THÊM DÒNG NÀY VÀO ĐÂY
+  base: '/LifeFlow-Personal-OS-/',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
