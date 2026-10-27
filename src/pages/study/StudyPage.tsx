@@ -2,21 +2,41 @@ import { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   BookOpen, GraduationCap, CalendarDays, FileText, Clock,
-  Plus, Play, Pause, RotateCcw, CheckCircle2, Trash2, MapPin, Video
+  Plus, Play, Pause, RotateCcw, CheckCircle2, Trash2, MapPin, Video, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useStudyStore } from '@/store/studyStore';
 import { formatDate, getTodayString, confirmAction } from '@/utils';
 import type { ImportanceLevel, AssignmentStatus } from '@/types';
 
+type ScheduleDraft = {
+  subjectId: string;
+  date: string;
+  day: number;
+  start: string;
+  end: string;
+  room: string;
+};
+
 const DAYS_OF_WEEK = [
-  { day: 2, label: 'Thứ Hai' },
-  { day: 3, label: 'Thứ Ba' },
-  { day: 4, label: 'Thứ Tư' },
-  { day: 5, label: 'Thứ Năm' },
-  { day: 6, label: 'Thứ Sáu' },
-  { day: 7, label: 'Thứ Bảy' },
-  { day: 1, label: 'Chủ Nhật' },
+  { day: 1, label: 'Thứ Hai' },
+  { day: 2, label: 'Thứ Ba' },
+  { day: 3, label: 'Thứ Tư' },
+  { day: 4, label: 'Thứ Năm' },
+  { day: 5, label: 'Thứ Sáu' },
+  { day: 6, label: 'Thứ Bảy' },
+  { day: 7, label: 'Chủ Nhật' },
 ];
+
+const getMonday = (date: Date): Date => {
+  const result = new Date(date);
+  const day = result.getDay();
+  result.setDate(result.getDate() - (day === 0 ? 6 : day - 1));
+  result.setHours(12, 0, 0, 0);
+  return result;
+};
+
+const toDateString = (date: Date): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
 export default function StudyPage() {
   const location = useLocation();
@@ -47,6 +67,7 @@ export default function StudyPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [selectedSubjectId, setSelectedSubjectId] = useState(subjects[0]?.id || '');
+  const [weekOffset, setWeekOffset] = useState(0);
 
   // Modals
   const [modalType, setModalType] = useState<string | null>(null);
@@ -58,11 +79,19 @@ export default function StudyPage() {
   const [subColor, setSubColor] = useState('#6366f1');
 
   // Schedule Entry Form
-  const [schSubId, setSchSubId] = useState(subjects[0]?.id || '');
-  const [schDay, setSchDay] = useState(2);
-  const [schStart, setSchStart] = useState('08:00');
-  const [schEnd, setSchEnd] = useState('10:00');
-  const [schRoom, setSchRoom] = useState('');
+  const [scheduleDrafts, setScheduleDrafts] = useState<ScheduleDraft[]>([
+    { subjectId: subjects[0]?.id || '', date: today, day: new Date(`${today}T12:00:00`).getDay() || 7, start: '08:00', end: '10:00', room: '' }
+  ]);
+
+  const weekDays = useMemo(() => {
+    const monday = getMonday(new Date());
+    monday.setDate(monday.getDate() + weekOffset * 7);
+    return DAYS_OF_WEEK.map((day, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return { ...day, date: toDateString(date) };
+    });
+  }, [weekOffset]);
 
   // Assignment Form
   const [asgnSubId, setAsgnSubId] = useState(subjects[0]?.id || '');
@@ -140,15 +169,36 @@ export default function StudyPage() {
   };
 
   const handleSaveSchedule = () => {
-    if (!schSubId || !schStart || !schEnd) return;
-    addScheduleEntry({
-      subjectId: schSubId,
-      dayOfWeek: schDay,
-      startTime: schStart,
-      endTime: schEnd,
-      room: schRoom || undefined
-    });
+    const validDrafts = scheduleDrafts.filter(draft =>
+      draft.subjectId && draft.date && draft.start && draft.end && draft.start < draft.end
+    );
+    if (validDrafts.length === 0) return;
+
+    validDrafts.forEach(draft => addScheduleEntry({
+      subjectId: draft.subjectId,
+      date: draft.date,
+      dayOfWeek: draft.day,
+      startTime: draft.start,
+      endTime: draft.end,
+      room: draft.room || undefined
+    }));
+    setScheduleDrafts([
+      { subjectId: subjects[0]?.id || '', date: today, day: new Date(`${today}T12:00:00`).getDay() || 7, start: '08:00', end: '10:00', room: '' }
+    ]);
     setModalType(null);
+  };
+
+  const updateScheduleDraft = (index: number, patch: Partial<ScheduleDraft>) => {
+    setScheduleDrafts(current => current.map((draft, draftIndex) =>
+      draftIndex === index ? { ...draft, ...patch } : draft
+    ));
+  };
+
+  const addScheduleDraft = () => {
+    setScheduleDrafts(current => [
+      ...current,
+      { subjectId: subjects[0]?.id || '', date: today, day: 1, start: '10:00', end: '12:00', room: '' }
+    ]);
   };
 
   const handleSaveAssignment = () => {
@@ -280,20 +330,31 @@ export default function StudyPage() {
       {/* ── TAB 2: SCHEDULE ── */}
       {activeTab === 'schedule' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2>Thời Khóa Biểu Tuần</h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <div>
+              <h2 style={{ marginBottom: 3 }}>Thời Khóa Biểu Tuần</h2>
+              <small className="muted">Lịch học theo ngày cụ thể, không lặp cố định hàng tuần.</small>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => setWeekOffset(offset => offset - 1)}><ChevronLeft size={15} /></button>
+              <button className="btn btn-secondary btn-sm" onClick={() => setWeekOffset(0)}>Tuần này</button>
+              <button className="btn btn-secondary btn-sm" onClick={() => setWeekOffset(offset => offset + 1)}><ChevronRight size={15} /></button>
+            </div>
             <button className="btn btn-primary" onClick={() => setModalType('schedule')}>
               <Plus size={15} /> Thêm tiết học
             </button>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 14 }}>
-            {DAYS_OF_WEEK.map(d => {
-              const dayEntries = scheduleEntries.filter(s => s.dayOfWeek === d.day && s.isActive);
+            {weekDays.map(d => {
+              const dayEntries = scheduleEntries.filter(s =>
+                s.isActive && (s.date ? s.date === d.date : s.dayOfWeek === d.day)
+              );
               return (
-                <div key={d.day} className="card panel" style={{ minHeight: 180 }}>
+                <div key={d.date} className="card panel" style={{ minHeight: 180 }}>
                   <h3 style={{ fontSize: 15, margin: '0 0 12px', borderBottom: '1px solid var(--border-color)', paddingBottom: 6 }}>
                     {d.label}
+                    <small className="muted" style={{ display: 'block', fontWeight: 400 }}>{formatDate(d.date)}</small>
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {dayEntries.length === 0 ? (
@@ -543,38 +604,75 @@ export default function StudyPage() {
         <div className="modal-backdrop" onMouseDown={e => e.currentTarget === e.target && setModalType(null)}>
           <div className="modal card">
             <div className="modal-heading">
-              <h2>Thêm Tiết Học Vào TKB</h2>
+              <div>
+                <h2>Thêm Môn Học Vào TKB</h2>
+                <small className="muted">Bạn có thể thêm nhiều môn trong một lần.</small>
+              </div>
               <button className="icon-btn" onClick={() => setModalType(null)}>✕</button>
             </div>
-            <label>
-              Môn học
-              <select className="input select" value={schSubId} onChange={e => setSchSubId(e.target.value)}>
-                {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-              </select>
-            </label>
-            <label>
-              Thứ trong tuần
-              <select className="input select" value={schDay} onChange={e => setSchDay(Number(e.target.value))}>
-                {DAYS_OF_WEEK.map(d => <option key={d.day} value={d.day}>{d.label}</option>)}
-              </select>
-            </label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-              <label>
-                Giờ bắt đầu
-                <input className="input" type="time" value={schStart} onChange={e => setSchStart(e.target.value)} />
-              </label>
-              <label>
-                Giờ kết thúc
-                <input className="input" type="time" value={schEnd} onChange={e => setSchEnd(e.target.value)} />
-              </label>
+            <div className="schedule-drafts">
+              {scheduleDrafts.map((draft, index) => (
+                <div className="schedule-draft" key={index}>
+                  <div className="schedule-draft-heading">
+                    <strong>Tiết {index + 1}</strong>
+                    {scheduleDrafts.length > 1 && (
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        type="button"
+                        onClick={() => setScheduleDrafts(current => current.filter((_, draftIndex) => draftIndex !== index))}
+                      >
+                        Xóa dòng
+                      </button>
+                    )}
+                  </div>
+                  <label>
+                    Môn học
+                    <select className="input select" value={draft.subjectId} onChange={e => updateScheduleDraft(index, { subjectId: e.target.value })}>
+                      {subjects.length === 0 && <option value="">Chưa có môn học</option>}
+                      {subjects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                  </label>
+                  <label>
+                    Ngày học
+                    <input
+                      className="input"
+                      type="date"
+                      value={draft.date}
+                      onChange={e => updateScheduleDraft(index, {
+                        date: e.target.value,
+                        day: new Date(`${e.target.value}T12:00:00`).getDay() || 7
+                      })}
+                    />
+                  </label>
+                  <label>
+                    Ngày đã chọn
+                    <span className="input" style={{ display: 'block', color: 'var(--text-secondary)' }}>
+                      {DAYS_OF_WEEK.find(day => day.day === draft.day)?.label || 'Chọn ngày ở trên'}
+                    </span>
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <label>
+                      Bắt đầu
+                      <input className="input" type="time" value={draft.start} onChange={e => updateScheduleDraft(index, { start: e.target.value })} />
+                    </label>
+                    <label>
+                      Kết thúc
+                      <input className="input" type="time" value={draft.end} onChange={e => updateScheduleDraft(index, { end: e.target.value })} />
+                    </label>
+                  </div>
+                  <label>
+                    Phòng học
+                    <input className="input" value={draft.room} onChange={e => updateScheduleDraft(index, { room: e.target.value })} placeholder="B201" />
+                  </label>
+                </div>
+              ))}
             </div>
-            <label>
-              Phòng học
-              <input className="input" value={schRoom} onChange={e => setSchRoom(e.target.value)} placeholder="B201" />
-            </label>
+            <button className="btn btn-secondary schedule-add-row" type="button" onClick={addScheduleDraft} disabled={subjects.length === 0}>
+              <Plus size={14} /> Thêm môn/tiết khác
+            </button>
             <div className="modal-actions">
               <button className="btn btn-secondary" onClick={() => setModalType(null)}>Hủy</button>
-              <button className="btn btn-primary" onClick={handleSaveSchedule}>Lưu lịch học</button>
+              <button className="btn btn-primary" onClick={handleSaveSchedule} disabled={subjects.length === 0}>Lưu {scheduleDrafts.length} tiết học</button>
             </div>
           </div>
         </div>

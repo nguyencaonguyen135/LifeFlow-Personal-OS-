@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, Bell, Moon, Sun, Plus, User, ChevronDown, X, Check, TrendingUp, ListChecks, Calendar, BookOpen, Flame, Target } from 'lucide-react';
+import { Search, Bell, Moon, Sun, Plus, User, ChevronDown, X, Check, TrendingUp, ListChecks, Calendar, BookOpen, Flame, Target, LogOut } from 'lucide-react';
+import { useAuthStore } from '@/store/authStore';
+import { confirmAction } from '@/utils';
 import { useSettingStore } from '@/store/settingStore';
 import { useFinanceStore } from '@/store/financeStore';
 import { useTaskStore } from '@/store/taskStore';
@@ -11,6 +13,7 @@ interface HeaderProps {
 
 export default function Header({ onQuickAdd }: HeaderProps) {
   const { user, settings, toggleTheme } = useSettingStore();
+  const { logout } = useAuthStore();
   const { transactions, categories } = useFinanceStore();
   const { tasks } = useTaskStore();
 
@@ -266,6 +269,13 @@ export default function Header({ onQuickAdd }: HeaderProps) {
         {isDark ? <Sun size={18} /> : <Moon size={18} />}
       </button>
 
+      <button
+        className="btn btn-ghost btn-icon"
+        onClick={() => confirmAction('Bạn có chắc muốn đăng xuất khỏi LifeFlow không?', logout)}
+        title="Đăng xuất"
+      >
+        <LogOut size={18} />
+      </button>
       {/* User Avatar */}
       <div
         style={{

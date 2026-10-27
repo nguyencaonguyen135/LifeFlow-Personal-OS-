@@ -31,6 +31,8 @@ import { getTodayString } from './utils';
 
 import './App.css';
 import ConfirmDialog from './components/common/ConfirmDialog';
+import AuthPage from './pages/auth/AuthPage';
+import { useAuthStore } from './store/authStore';
 
 type QuickAction = 'income' | 'expense' | 'task' | 'event' | 'habit' | 'goal' | null;
 
@@ -38,8 +40,10 @@ function AppShell() {
   const [collapsed, setCollapsed] = useState(false);
   const [quickAction, setQuickAction] = useState<QuickAction>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const { user, isLoaded, load } = useAuthStore();
 
   useEffect(() => {
+    load();
     // 1. Seed demo data if first time
     loadDemoData();
 
@@ -55,11 +59,26 @@ function AppShell() {
     useCalendarStore.getState().load();
     useStudyStore.getState().load();
     useHealthStore.getState().load();
-  }, []);
+  }, [load]);
+
+  useEffect(() => {
+    if (!user) return;
+    useSettingStore.getState().load();
+    useFinanceStore.getState().load();
+    useTaskStore.getState().load();
+    useHabitStore.getState().load();
+    useGoalStore.getState().load();
+    useCalendarStore.getState().load();
+    useStudyStore.getState().load();
+    useHealthStore.getState().load();
+  }, [user?.id]);
 
   const openQuickAdd = (type: string) => {
     setQuickAction(type as QuickAction);
   };
+
+  if (!isLoaded) return <div className="auth-loading">Đang tải LifeFlow...</div>;
+  if (!user) return <AuthPage />;
 
   return (
     <div className="app-shell">

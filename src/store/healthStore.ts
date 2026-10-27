@@ -26,6 +26,8 @@ const createRecord = (date: string, data: HealthRecordInput = {}): HealthRecord 
     sleepQuality: 0,
     waterMl: 0,
     exerciseMinutes: 0,
+    energyLevel: 0,
+    stressLevel: 0,
     ...data,
     createdAt: now,
     updatedAt: now,

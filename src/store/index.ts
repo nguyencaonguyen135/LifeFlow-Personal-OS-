@@ -5,3 +5,5 @@ export * from './goalStore';
 export * from './settingStore';
 export * from './calendarStore';
 export * from './studyStore';
+export * from './healthStore';
+export * from './authStore';

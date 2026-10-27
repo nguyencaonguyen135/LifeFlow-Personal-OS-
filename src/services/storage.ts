@@ -8,6 +8,10 @@ const VERSION = '1.0.0';
 
 export const StorageKeys = {
   USER: `${PREFIX}user`,
+  AUTH_USERS: `${PREFIX}auth_users`,
+  AUTH_SESSION: `${PREFIX}auth_session`,
+  AUTH_REMEMBERED_EMAIL: `${PREFIX}auth_remembered_email`,
+  AUTH_REMEMBERED_PASSWORD: `${PREFIX}auth_remembered_password`,
   SETTINGS: `${PREFIX}settings`,
   ACCOUNTS: `${PREFIX}accounts`,
   CATEGORIES: `${PREFIX}categories`,
@@ -63,6 +67,8 @@ export function storageClear(): void {
 export function storageExport(): string {
   const data: Record<string, unknown> = { version: VERSION, exportedAt: new Date().toISOString() };
   Object.entries(StorageKeys).forEach(([name, key]) => {
+    if (key === StorageKeys.AUTH_USERS || key === StorageKeys.AUTH_SESSION ||
+        key === StorageKeys.AUTH_REMEMBERED_EMAIL || key === StorageKeys.AUTH_REMEMBERED_PASSWORD) return;
     const raw = localStorage.getItem(key);
     if (raw) {
       try { data[name] = JSON.parse(raw); } catch { data[name] = raw; }

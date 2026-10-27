@@ -5,12 +5,14 @@ import {
 } from 'lucide-react';
 import { useCalendarStore } from '@/store/calendarStore';
 import { useStudyStore } from '@/store/studyStore';
+import { useTaskStore } from '@/store/taskStore';
 import { formatDate, getTodayString, confirmAction } from '@/utils';
 import type { EventType, CalendarEvent } from '@/types';
 
 export default function CalendarPage() {
   const { events, addEvent, deleteEvent, checkConflict } = useCalendarStore();
   const { scheduleEntries, subjects, assignments, exams } = useStudyStore();
+  const { tasks } = useTaskStore();
 
   const today = getTodayString();
   const [selectedDate, setSelectedDate] = useState(today);
@@ -77,21 +79,28 @@ export default function CalendarPage() {
   // Selected date events & items
   const selectedDateEvents = useMemo(() => {
     const selEvents = events.filter(e => e.date === selectedDate);
+    const selTasks = tasks.filter(task =>
+      (task.startDate === selectedDate || task.dueDate === selectedDate) &&
+      task.status !== 'cancelled'
+    );
     const selDeadlines = assignments.filter(a => a.deadline === selectedDate);
     const selExams = exams.filter(e => e.datetime.startsWith(selectedDate));
 
     // Study schedules for day of week
     const dayOfWeek = new Date(selectedDate).getDay(); // 0-6
     const mappedDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek; // 1-7
-    const daySchedules = scheduleEntries.filter(s => s.dayOfWeek === mappedDayOfWeek && s.isActive);
+    const daySchedules = scheduleEntries.filter(s =>
+      s.isActive && (s.date ? s.date === selectedDate : s.dayOfWeek === mappedDayOfWeek)
+    );
 
     return {
       events: selEvents,
+      tasks: selTasks,
       deadlines: selDeadlines,
       exams: selExams,
       schedules: daySchedules
     };
-  }, [events, assignments, exams, scheduleEntries, selectedDate]);
+  }, [events, tasks, assignments, exams, scheduleEntries, selectedDate]);
 
   // Check conflicts in real-time when filling form
   const handleCheckConflict = (d: string, st: string, et: string) => {
@@ -198,7 +207,19 @@ export default function CalendarPage() {
             {calendarDays.map((day, idx) => {
               const isSelected = day.dateStr === selectedDate;
               const isToday = day.dateStr === today;
-              const hasEvents = events.some(e => e.date === day.dateStr);
+              const hasEvents =
+                events.some(e => e.date === day.dateStr) ||
+                tasks.some(task =>
+                  (task.startDate === day.dateStr || task.dueDate === day.dateStr) &&
+                  task.status !== 'cancelled'
+                ) ||
+                assignments.some(assignment => assignment.deadline === day.dateStr) ||
+                exams.some(exam => exam.datetime.startsWith(day.dateStr)) ||
+                scheduleEntries.some(schedule => {
+                  const dayOfWeek = new Date(`${day.dateStr}T12:00:00`).getDay();
+                  const mappedDayOfWeek = dayOfWeek === 0 ? 7 : dayOfWeek;
+                  return schedule.dayOfWeek === mappedDayOfWeek && schedule.isActive;
+                });
 
               return (
                 <button
@@ -308,7 +329,27 @@ export default function CalendarPage() {
               </div>
             ))}
 
-            {/* 3. Deadlines */}
+            {/* 3. Work tasks */}
+            {selectedDateEvents.tasks.map(task => (
+              <div
+                key={task.id}
+                style={{
+                  padding: '12px',
+                  borderRadius: 10,
+                  background: 'var(--color-primary-light)',
+                  borderLeft: '4px solid var(--color-primary)'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="badge badge-primary">Công việc</span>
+                  <small className="muted">{task.status === 'done' ? 'Đã hoàn thành' : task.dueDate === selectedDate ? 'Hạn hôm nay' : 'Bắt đầu hôm nay'}</small>
+                </div>
+                <h4 style={{ margin: '6px 0 2px', fontSize: 14 }}>{task.title}</h4>
+                {task.priority && <small className="muted">Ưu tiên: {task.priority === 'urgent' ? 'Rất gấp' : task.priority === 'high' ? 'Cao' : task.priority === 'medium' ? 'Trung bình' : 'Thấp'}</small>}
+              </div>
+            ))}
+
+            {/* 4. Deadlines */}
             {selectedDateEvents.deadlines.map(d => (
               <div
                 key={d.id}
@@ -324,7 +365,7 @@ export default function CalendarPage() {
               </div>
             ))}
 
-            {/* 4. Calendar Events */}
+            {/* 5. Calendar Events */}
             {selectedDateEvents.events.map(ev => (
               <div
                 key={ev.id}
@@ -359,6 +400,7 @@ export default function CalendarPage() {
             ))}
 
             {selectedDateEvents.events.length === 0 &&
+              selectedDateEvents.tasks.length === 0 &&
               selectedDateEvents.schedules.length === 0 &&
               selectedDateEvents.exams.length === 0 &&
               selectedDateEvents.deadlines.length === 0 && (

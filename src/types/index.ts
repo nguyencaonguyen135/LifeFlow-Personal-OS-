@@ -300,6 +300,7 @@ export interface ScheduleEntry {
   id: string;
   userId: string;
   subjectId: string;
+  date?: string; // YYYY-MM-DD; absent on legacy recurring entries
   dayOfWeek: number; // 0-6
   startTime: string;
   endTime: string;
@@ -410,6 +411,9 @@ export interface HealthRecord {
   exerciseType?: string;
   mood?: HealthMood;
   energyLevel?: number;
+  stressLevel?: number;
+  symptoms?: string;
+  restingHeartRate?: number;
   note?: string;
   createdAt: string;
   updatedAt: string;

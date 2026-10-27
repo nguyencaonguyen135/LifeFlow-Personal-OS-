@@ -10,15 +10,18 @@ import { useHabitStore } from '@/store/habitStore';
 import { useGoalStore } from '@/store/goalStore';
 import { useCalendarStore } from '@/store/calendarStore';
 import { useStudyStore } from '@/store/studyStore';
+import { useHealthStore } from '@/store/healthStore';
 import { storageExport, storageImport, storageClear } from '@/services/storage';
 import { loadDemoData } from '@/data/demoData';
 import { confirmAction } from '@/utils';
+import { useAuthStore } from '@/store/authStore';
 
 export default function SettingsPage() {
   const {
     user, settings,
     updateUser, updateSettings, toggleTheme
   } = useSettingStore();
+  const { changePassword } = useAuthStore();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(user.name);
@@ -26,6 +29,9 @@ export default function SettingsPage() {
   const [avatar, setAvatar] = useState(user.avatar || '');
   const [isSaved, setIsSaved] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
 
   const reloadAllStores = () => {
     useSettingStore.getState().load();
@@ -35,6 +41,7 @@ export default function SettingsPage() {
     useGoalStore.getState().load();
     useCalendarStore.getState().load();
     useStudyStore.getState().load();
+    useHealthStore.getState().load();
   };
 
   const handleSaveProfile = () => {
@@ -47,6 +54,15 @@ export default function SettingsPage() {
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2500);
     });
+  };
+
+  const handleChangePassword = async () => {
+    const result = await changePassword(currentPassword, newPassword);
+    setPasswordMessage(result.success ? 'Đã đổi mật khẩu thành công.' : result.error || 'Không thể đổi mật khẩu.');
+    if (result.success) {
+      setCurrentPassword('');
+      setNewPassword('');
+    }
   };
 
   const confirmSettingsUpdate = (message: string, change: Parameters<typeof updateSettings>[0]) => {
@@ -163,6 +179,19 @@ export default function SettingsPage() {
             {isSaved ? <Check size={16} /> : null}
             <span>{isSaved ? 'Đã lưu thay đổi' : 'Lưu thông tin'}</span>
           </button>
+        </div>
+      </div>
+
+      <div className="card panel" style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <h2>Bảo Mật Tài Khoản</h2>
+        <p className="muted" style={{ margin: 0 }}>Đổi mật khẩu định kỳ để bảo vệ tài khoản trên thiết bị này.</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+          <label>Mật khẩu hiện tại<input className="input" type="password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} /></label>
+          <label>Mật khẩu mới<input className="input" type="password" value={newPassword} onChange={event => setNewPassword(event.target.value)} placeholder="Ít nhất 6 ký tự" /></label>
+        </div>
+        {passwordMessage && <div className="muted">{passwordMessage}</div>}
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button className="btn btn-secondary" onClick={handleChangePassword} disabled={!currentPassword || !newPassword}>Đổi mật khẩu</button>
         </div>
       </div>
 
